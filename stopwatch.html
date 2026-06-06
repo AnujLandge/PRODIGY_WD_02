@@ -1,0 +1,365 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #09090f; font-family: 'Syne', sans-serif; color: #f0f0ff; }
+
+  .wrap { width: 100%; padding: 32px 28px 28px; background: #09090f; }
+
+  /* ── Ring ── */
+  .ring-wrap {
+    position: relative;
+    width:360px; height:360px;
+    margin: 0 auto 28px;
+  }
+  .ring-svg {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    transform: rotate(-90deg);
+  }
+  .ring-bg  { fill: none; stroke: #1e1e2a; stroke-width: 8; }
+  #ring {
+    fill: none; stroke: #00e5ff; stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 816.8;
+    stroke-dashoffset: 816.8;
+    transition: stroke 0.3s;
+  }
+  .ring-inner {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 2px;
+  }
+  .lbl { font-size: 10px; letter-spacing: 0.2em; color: rgba(240,240,255,0.35); font-weight: 600; }
+  #timeMain {
+    font-family: 'DM Mono', 'Fira Code', monospace;
+    font-size:48px; font-weight:500;
+    letter-spacing: -0.02em; color: #ffffff; line-height: 1;
+  }
+  #timeMs {
+    font-family: 'DM Mono', 'Fira Code', monospace;
+    font-size:24px; font-weight:300; color: #00e5ff; line-height: 1;
+  }
+  #lapBadge {
+    margin-top: 6px; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.12em; color: rgba(240,240,255,0.35);
+    background: #1a1a26; border: 1px solid rgba(255,255,255,0.1);
+    padding: 3px 12px; border-radius: 99px;
+    transition: all 0.2s;
+  }
+  #lapBadge.active { color: #00e5ff; border-color: rgba(0,229,255,0.4); background: rgba(0,229,255,0.1); }
+
+  /* ── Controls ── */
+  .controls { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 14px; }
+  .btn-main {
+    display: flex; align-items: center; gap: 8px;
+    padding:18px 42px; background: #00e5ff; color: #000;
+    border: none; border-radius: 99px;
+    font-family: 'Syne', sans-serif; font-size:20px; font-weight:700;
+    cursor: pointer; min-width:180px; justify-content: center;
+    transition: background 0.2s, transform 0.12s;
+  }
+  .btn-main:hover { transform: scale(1.04); }
+  .btn-main:active { transform: scale(0.96); }
+  .btn-main.pause { background: #ff4d6d; color: #fff; }
+  .btn-side {
+    display: flex; align-items: center; gap: 6px;
+    padding: 11px 22px; background: #16161f; color: rgba(240,240,255,0.65);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 99px;
+    font-family: 'Syne', sans-serif; font-size:16px; font-weight:600;
+    cursor: pointer; min-width:130px; justify-content: center;
+    transition: color 0.2s, border-color 0.2s, background 0.2s, transform 0.12s;
+  }
+  .btn-side:hover:not(:disabled) { color: #fff; border-color: rgba(255,255,255,0.25); background: #1f1f2e; transform: scale(1.02); }
+  .btn-side:active:not(:disabled) { transform: scale(0.97); }
+  .btn-side:disabled { opacity: 0.3; cursor: default; }
+
+  /* ── Shortcuts ── */
+  .shortcuts { display: flex; justify-content: center; gap: 18px; margin-bottom: 28px; }
+  .sc { display: flex; align-items: center; gap: 5px; }
+  .kbd {
+    font-size: 10px; font-family: monospace;
+    color: rgba(240,240,255,0.4); background: #1a1a26;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px; padding: 2px 6px; line-height: 1.6;
+  }
+  .sc-lbl { font-size: 11px; color: rgba(240,240,255,0.35); }
+
+  /* ── Laps table ── */
+  .laps-section { width: 100%; }
+  .laps-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 4px 10px; border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 6px;
+  }
+  .laps-th { font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(240,240,255,0.4); }
+  .laps-th-right { display: flex; gap: 24px; }
+  .laps-th-col { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(240,240,255,0.4); min-width: 72px; text-align: right; }
+  .laps-meta { display: flex; gap: 14px; align-items: center; }
+  .meta-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: rgba(240,240,255,0.4); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; }
+
+  .empty-laps {
+    text-align: center; padding: 24px 0;
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    color: rgba(240,240,255,0.25);
+    border: 1px dashed rgba(255,255,255,0.08); border-radius: 10px;
+  }
+
+  .laps-list {
+    list-style: none; display: flex; flex-direction: column; gap: 2px;
+    max-height:320px; overflow-y: auto;
+    padding-right: 2px;
+  }
+  .laps-list::-webkit-scrollbar { width: 3px; }
+  .laps-list::-webkit-scrollbar-track { background: transparent; }
+  .laps-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 99px; }
+
+  .lap-row {
+    display: grid;
+    grid-template-columns: 48px 1fr 80px 70px;
+    align-items: center; gap: 12px;
+    padding: 10px 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: background 0.15s;
+    border-radius: 6px;
+    animation: fadeSlide 0.2s ease;
+  }
+  .lap-row:hover { background: rgba(255,255,255,0.03); }
+  .lap-row.best  { background: rgba(6,214,160,0.04); }
+  .lap-row.worst { background: rgba(255,77,109,0.04); }
+
+  .lap-idx {
+    font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500;
+    color: rgba(240,240,255,0.5);
+  }
+  .lap-row.best  .lap-idx { color: #06d6a0; font-weight: 600; }
+  .lap-row.worst .lap-idx { color: #ff4d6d; font-weight: 600; }
+
+  .bar-wrap { display: flex; align-items: center; }
+  .bar-track { flex: 1; height: 3px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
+  .bar-fill { height: 100%; background: #00e5ff; border-radius: 99px; transition: width 0.35s; }
+  .lap-row.best  .bar-fill { background: #06d6a0; }
+  .lap-row.worst .bar-fill { background: #ff4d6d; }
+
+  .lap-time {
+    font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500;
+    color: #f0f0ff; text-align: right;
+  }
+  .lap-delta {
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    color: rgba(240,240,255,0.4); text-align: right;
+  }
+  .lap-delta.pos { color: #ff6b84; }
+  .lap-delta.neg { color: #06d6a0; }
+
+  @keyframes fadeSlide { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; } }
+
+.ring-inner{overflow:hidden;padding:20px;}
+#timeMain{max-width:220px;text-align:center;white-space:nowrap;line-height:.9;}
+.controls{gap:20px;}
+.lap-row{padding:14px 10px;grid-template-columns:70px 1fr 100px 90px;}
+.lap-time{font-size:16px;}
+.lap-delta{font-size:14px;}
+.wrap{max-width:1200px;margin:0 auto;}
+
+
+.ring-inner{
+  overflow:hidden !important;
+  padding:34px !important;
+  gap:10px !important;
+}
+#timeMain{
+  max-width:280px !important;
+  font-size:46px !important;
+  line-height:.95 !important;
+}
+.lbl{margin-bottom:8px !important;}
+#lapBadge{margin-top:12px !important;}
+
+</style>
+
+<div class="wrap">
+
+  <!-- Ring -->
+  <div class="ring-wrap">
+    <svg class="ring-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+      <circle class="ring-bg" cx="150" cy="150" r="145"/>
+      <circle id="ring" cx="150" cy="150" r="145"/>
+    </svg>
+    <div class="ring-inner">
+      <span class="lbl">STOPWATCH</span>
+      <span id="timeMain">00:00:00</span>
+      <span id="timeMs">.000</span>
+      <span id="lapBadge">LAP 0</span>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button class="btn-side" id="lapBtn" disabled>
+      <i class="ti ti-flag" aria-hidden="true" style="font-size:15px"></i> Lap
+    </button>
+    <button class="btn-main" id="startBtn">
+      <i class="ti ti-player-play" id="iconPlay" aria-hidden="true" style="font-size:16px"></i>
+      <i class="ti ti-player-pause" id="iconPause" aria-hidden="true" style="font-size:16px;display:none"></i>
+      <span id="btnLabel">Start</span>
+    </button>
+    <button class="btn-side" id="resetBtn">
+      <i class="ti ti-refresh" aria-hidden="true" style="font-size:15px"></i> Reset
+    </button>
+  </div>
+
+  <!-- Shortcuts -->
+  <div class="shortcuts">
+    <div class="sc"><span class="kbd">Space</span><span class="sc-lbl">start / pause</span></div>
+    <div class="sc"><span class="kbd">L</span><span class="sc-lbl">lap</span></div>
+    <div class="sc"><span class="kbd">R</span><span class="sc-lbl">reset</span></div>
+  </div>
+
+  <!-- Lap table -->
+  <div class="laps-section">
+    <div class="laps-head">
+      <span class="laps-th">Lap</span>
+      <div class="laps-meta" id="lapsMeta"></div>
+      <div class="laps-th-right">
+        <span class="laps-th-col">Lap time</span>
+        <span class="laps-th-col">+/− avg</span>
+      </div>
+    </div>
+    <div class="empty-laps" id="lapsEmpty">No laps recorded yet</div>
+    <ul class="laps-list" id="lapsList"></ul>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  const CIRC = 911.1, CYCLE = 60000;
+  let elapsed = 0, startTime = 0, lapStart = 0;
+  let running = false, raf = null, laps = [];
+
+  const $ = id => document.getElementById(id);
+  const timeMain = $('timeMain'), timeMs = $('timeMs'), lapBadge = $('lapBadge');
+  const startBtn = $('startBtn'), btnLabel = $('btnLabel');
+  const lapBtn = $('lapBtn'), resetBtn = $('resetBtn');
+  const ring = $('ring');
+  const lapsList = $('lapsList'), lapsEmpty = $('lapsEmpty'), lapsMeta = $('lapsMeta');
+  const iconPlay = $('iconPlay'), iconPause = $('iconPause');
+
+  const p2 = n => String(n).padStart(2, '0');
+  const p3 = n => String(n).padStart(3, '0');
+
+  function fmtMain(ms) {
+    return p2(Math.floor(ms/60000)) + ':' + p2(Math.floor((ms%60000)/1000)) + ':' + p2(Math.floor((ms%1000)/10));
+  }
+  function fmtLap(ms) {
+    return p2(Math.floor(ms/60000)) + ':' + p2(Math.floor((ms%60000)/1000)) + '.' + p2(Math.floor((ms%1000)/10));
+  }
+  function fmtDelta(ms) {
+    const sign = ms >= 0 ? '+' : '−';
+    const abs = Math.abs(ms);
+    return sign + p2(Math.floor(abs/1000)) + '.' + p2(Math.floor((abs%1000)/10));
+  }
+  function now() { return elapsed + (running ? performance.now() - startTime : 0); }
+
+  function tick() {
+    const t = now();
+    timeMain.textContent = fmtMain(t);
+    timeMs.textContent = '.' + p3(Math.floor(t % 1000));
+    ring.style.strokeDashoffset = (CIRC * (1 - (t % CYCLE) / CYCLE)).toFixed(2);
+    if (running) raf = requestAnimationFrame(tick);
+  }
+
+  function startStop() {
+    if (!running) {
+      startTime = performance.now();
+      running = true;
+      startBtn.classList.add('pause');
+      btnLabel.textContent = 'Pause';
+      iconPlay.style.display = 'none';
+      iconPause.style.display = '';
+      lapBtn.disabled = false;
+      lapBadge.classList.add('active');
+      raf = requestAnimationFrame(tick);
+    } else {
+      elapsed += performance.now() - startTime;
+      running = false;
+      cancelAnimationFrame(raf);
+      startBtn.classList.remove('pause');
+      btnLabel.textContent = 'Resume';
+      iconPlay.style.display = '';
+      iconPause.style.display = 'none';
+    }
+  }
+
+  function recordLap() {
+    if (!running) return;
+    const t = now();
+    laps.push({ lapMs: t - lapStart, total: t });
+    lapStart = t;
+    renderLaps();
+    ring.style.stroke = '#ffd166';
+    setTimeout(() => { ring.style.stroke = '#00e5ff'; }, 360);
+    lapBadge.textContent = 'LAP ' + (laps.length + 1);
+  }
+
+  function reset() {
+    if (running) { cancelAnimationFrame(raf); running = false; }
+    elapsed = 0; lapStart = 0; startTime = 0; laps = [];
+    timeMain.textContent = '00:00:00';
+    timeMs.textContent = '.000';
+    ring.style.strokeDashoffset = CIRC;
+    ring.style.stroke = '#00e5ff';
+    lapBadge.textContent = 'LAP 0';
+    lapBadge.classList.remove('active');
+    startBtn.classList.remove('pause');
+    btnLabel.textContent = 'Start';
+    iconPlay.style.display = '';
+    iconPause.style.display = 'none';
+    lapBtn.disabled = true;
+    lapsList.innerHTML = '';
+    lapsEmpty.style.display = '';
+    lapsMeta.innerHTML = '';
+  }
+
+  function renderLaps() {
+    if (!laps.length) { lapsEmpty.style.display = ''; lapsMeta.innerHTML = ''; return; }
+    lapsEmpty.style.display = 'none';
+    const times = laps.map(l => l.lapMs);
+    const minT = Math.min(...times), maxT = Math.max(...times);
+    const avg = times.reduce((a, b) => a + b, 0) / times.length;
+    lapsMeta.innerHTML = laps.length > 1
+      ? `<span class="meta-item"><span class="dot" style="background:#06d6a0"></span>Best</span>
+         <span class="meta-item"><span class="dot" style="background:#ff4d6d"></span>Worst</span>`
+      : '';
+    lapsList.innerHTML = '';
+    [...laps].reverse().forEach((lap, ri) => {
+      const idx = laps.length - ri;
+      const isBest  = laps.length > 1 && lap.lapMs === minT;
+      const isWorst = laps.length > 1 && lap.lapMs === maxT;
+      const bar = maxT > 0 ? (lap.lapMs / maxT * 100).toFixed(1) : '0';
+      const deltaMs = lap.lapMs - avg;
+      const deltaClass = laps.length > 1 ? (deltaMs > 0 ? 'pos' : 'neg') : '';
+      const deltaStr = laps.length > 1 ? fmtDelta(deltaMs) : '—';
+      const li = document.createElement('li');
+      li.className = 'lap-row' + (isBest ? ' best' : isWorst ? ' worst' : '');
+      li.innerHTML =
+        `<span class="lap-idx">#${String(idx).padStart(2,'0')}</span>` +
+        `<div class="bar-wrap"><div class="bar-track"><div class="bar-fill" style="width:${bar}%"></div></div></div>` +
+        `<span class="lap-time">${fmtLap(lap.lapMs)}</span>` +
+        `<span class="lap-delta ${deltaClass}">${deltaStr}</span>`;
+      lapsList.appendChild(li);
+    });
+  }
+
+  startBtn.addEventListener('click', startStop);
+  lapBtn.addEventListener('click', recordLap);
+  resetBtn.addEventListener('click', reset);
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.code === 'Space') { e.preventDefault(); startStop(); }
+    if (e.code === 'KeyL' && !lapBtn.disabled) recordLap();
+    if (e.code === 'KeyR') reset();
+  });
+})();
+</script>

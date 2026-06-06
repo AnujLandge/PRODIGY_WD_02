@@ -23,3 +23,8 @@
 - Microsoft Edge
 - Brave Browser
 - Safari
+
+Author
+Anuj Landge
+
+GitHub: https://github.com/AnujLandge 

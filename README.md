@@ -1,3 +1,7 @@
+## Live Demo
+
+https://anujlandge.github.io/PRODIGY_WD_02/
+
 ## How to Run
 
 ### Method 1: Open Directly
@@ -26,5 +30,5 @@
 
 Author
 Anuj Landge
-
+Live Demo: https://anujlandge.github.io/PRODIGY_WD_02/
 GitHub: https://github.com/AnujLandge 

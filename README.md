@@ -1,72 +1,25 @@
-# PRODIGY_WD_02
+## How to Run
 
-## Stopwatch Web Application
+### Method 1: Open Directly
 
-A modern and responsive stopwatch web application developed using HTML, CSS, and JavaScript.
+1. Download or clone the repository.
+2. Extract the files if downloaded as a ZIP.
+3. Open the project folder.
+4. Double-click `index.html`.
+5. The stopwatch application will launch in your default web browser.
 
-This project was created as part of the Prodigy InfoTech Web Development Internship Program.
+### Method 2: Using VS Code Live Server
 
-## Features
+1. Open the project folder in Visual Studio Code.
+2. Install the Live Server extension.
+3. Right-click on `index.html`.
+4. Select **Open with Live Server**.
+5. The application will automatically open in your browser.
 
-- Start, Pause, and Resume functionality
-- Reset stopwatch
-- Lap recording system
-- Best and Worst lap indicators
-- Lap time comparison
-- Circular progress animation
-- Keyboard shortcuts
-- Responsive design
-- Modern user interface
+## Browser Compatibility
 
-## Technologies Used
-
-- HTML5
-- CSS3
-- JavaScript (ES6)
-
-## Keyboard Shortcuts
-
-| Key | Function |
-|------|----------|
-| Space | Start / Pause |
-| L | Record Lap |
-| R | Reset Stopwatch |
-
-## Project Structure
-
-```
-PRODIGY_WD_02/
-│
-├── index.html
-└── README.md
-```
-
-## Learning Outcomes
-
-Through this project I learned:
-
-- DOM Manipulation
-- Event Handling
-- JavaScript Timing Functions
-- Responsive UI Design
-- State Management
-- User Experience Design
-
-## Task Objective
-
-Build a stopwatch web application that allows users to:
-
-- Start timing
-- Pause timing
-- Reset timing
-- Record lap times
-- Display accurate time intervals
-
-## Author
-
-Anuj Landge
-
-Web Development Intern  
-Prodigy InfoTech
-
-
+- Google Chrome
+- Mozilla Firefox
+- Microsoft Edge
+- Brave Browser
+- Safari
